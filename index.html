@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Offline To-Do App</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+    input { padding: 10px; width: 250px; }
+    button { padding: 10px; margin-left: 10px; }
+    ul { list-style: none; padding: 0; }
+    li { margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <h2>📝 Offline To‑Do App</h2>
+  <input type="text" id="taskInput" placeholder="Enter a task" />
+  <button onclick="addTask()">Add</button>
+  <ul id="taskList"></ul>
+  <script>
+    window.onload = loadTasks;
+
+    function loadTasks() {
+      let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+      let ul = document.getElementById("taskList");
+      ul.innerHTML = "";
+      tasks.forEach(task => {
+        let li = document.createElement("li");
+        li.textContent = task;
+        ul.appendChild(li);
+      });
+    }
+
+    function addTask() {
+      let input = document.getElementById("taskInput");
+      let task = input.value.trim();
+      if (!task) return;
+      let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+      tasks.push(task);
+      localStorage.setItem("tasks", JSON.stringify(tasks));
+      input.value = "";
+      loadTasks();
+    }
+  </script>
+</body>
+</html>
