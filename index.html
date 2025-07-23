@@ -2,41 +2,53 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>JSON Output</title>
+  <title>Google Sheet JSON</title>
 </head>
 <body>
-  <script>
-    function getParam(name) {
-      const url = new URL(window.location.href);
-      return url.searchParams.get(name);
-    }
+<script>
+  function getParam(name) {
+    const url = new URL(window.location.href);
+    return url.searchParams.get(name);
+  }
 
-    const sheetId = getParam("sheetid");
-    const sheetName = getParam("SheetName") || "Sheet1"; // Default is Sheet1
+  const sheetId = getParam("sheetid");
+  const sheetName = getParam("SheetName") || "Sheet1";
 
-    if (sheetId) {
-      const query = encodeURIComponent("Select *");
-      const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&tq=${query}`;
+  if (sheetId) {
+    const query = encodeURIComponent("Select *");
+    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&tq=${query}`;
 
-      fetch(url)
-        .then(res => res.text())
-        .then(data => {
-          const json = JSON.parse(data.substr(47).slice(0, -2));
-          const headers = json.table.cols.map(col => col.label);
-          const rows = json.table.rows.map(row =>
-            row.c.reduce((obj, cell, i) => {
-              obj[headers[i]] = cell ? cell.v : null;
-              return obj;
-            }, {})
-          );
-          document.write(JSON.stringify(rows, null, 2));
-        })
-        .catch(err => {
-          document.write(JSON.stringify({ error: "❌ Sheet not found or not public." }));
+    fetch(url)
+      .then(res => res.text())
+      .then(data => {
+        const jsonData = JSON.parse(data.substring(47).slice(0, -2));
+        const headers = jsonData.table.cols.map(col => col.label || `Column${col.index}`);
+
+        const rows = jsonData.table.rows.map(row => {
+          let obj = {};
+          row.c.forEach((cell, i) => {
+            let value = null;
+            if (cell) {
+              value = cell.v;
+
+              // Try to convert to actual data types
+              if (value === "TRUE") value = true;
+              else if (value === "FALSE") value = false;
+              else if (!isNaN(value) && value !== "") value = Number(value);
+            }
+            obj[headers[i]] = value;
+          });
+          return obj;
         });
-    } else {
-      document.write(JSON.stringify({ error: "❗ sheetid missing in URL." }));
-    }
-  </script>
+
+        document.write(JSON.stringify(rows, null, 2));
+      })
+      .catch(err => {
+        document.write(JSON.stringify({ error: "❌ Sheet not found or not public." }));
+      });
+  } else {
+    document.write(JSON.stringify({ error: "❗ sheetid missing in URL." }));
+  }
+</script>
 </body>
 </html>
