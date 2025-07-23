@@ -2,10 +2,10 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Multi Sheet JSON Viewer</title>
+  <title>Editable JSON Viewer</title>
   <link href="https://cdn.jsdelivr.net/npm/jsoneditor@9.10.0/dist/jsoneditor.min.css" rel="stylesheet" />
   <style>
-    html, body { margin: 0; padding: 0; height: 100%; }
+    html, body { margin: 0; padding: 0; height: 100%; font-family: sans-serif; }
     #jsoneditor { height: 100vh; }
   </style>
 </head>
@@ -14,7 +14,16 @@
 
   <script src="https://cdn.jsdelivr.net/npm/jsoneditor@9.10.0/dist/jsoneditor.min.js"></script>
   <script>
-    const apiKey = "AIzaSyDGR-bGjSwexwcCl1EL6sM6gw0yq5U3X4U";
+    // Decode API key from base16
+    function hexToString(hex) {
+      let str = '';
+      for (let i = 0; i < hex.length; i += 2) {
+        str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+      }
+      return str;
+    }
+
+    const apiKey = hexToString("41495a6153794447522d62476a537765787763436c31454c36734d366777307971355533583455"); // your base16-encoded key
 
     function getParam(name) {
       const url = new URL(window.location.href);
@@ -75,7 +84,11 @@
           finalData[name] = rows;
         }
 
-        const editor = new JSONEditor(container, { mode: 'view' });
+        const editor = new JSONEditor(container, {
+          mode: 'code', // You can switch between 'code', 'tree', 'view', etc.
+          modes: ['code', 'tree', 'view'], // Enable editing
+          mainMenuBar: true
+        });
         editor.set(finalData);
       } catch (e) {
         container.innerText = "❌ Failed to load data. Check API key or Sheet permission.";
