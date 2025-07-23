@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Sheet JSON Viewer</title>
+  <title>Google Sheet to JSON</title>
 </head>
 <body>
-  <h2>Google Sheet to JSON</h2>
+  <h3>🧾 JSON Viewer</h3>
   <pre id="output">Loading...</pre>
 
   <script>
@@ -14,22 +14,30 @@
     }
 
     const sheetId = getParam("sheetid");
+    const sheetName = getParam("SheetName") || "Sheet1"; // Default Sheet1
 
     if (sheetId) {
-      const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
+      const query = encodeURIComponent("Select *");
+      const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&tq=${query}`;
 
       fetch(url)
         .then(res => res.text())
         .then(data => {
           const json = JSON.parse(data.substr(47).slice(0, -2));
-          const rows = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : null));
+          const headers = json.table.cols.map(col => col.label);
+          const rows = json.table.rows.map(row =>
+            row.c.reduce((obj, cell, i) => {
+              obj[headers[i]] = cell ? cell.v : null;
+              return obj;
+            }, {})
+          );
           document.getElementById("output").textContent = JSON.stringify(rows, null, 2);
         })
         .catch(err => {
-          document.getElementById("output").textContent = "Error fetching sheet.";
+          document.getElementById("output").textContent = "❌ Error: Sheet not found or not public.";
         });
     } else {
-      document.getElementById("output").textContent = "No sheetid provided.";
+      document.getElementById("output").textContent = "❗ sheetid missing in URL.";
     }
   </script>
 </body>
