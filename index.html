@@ -2,57 +2,62 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Google Sheet JSON</title>
+  <title>JSON Viewer</title>
+  <link href="https://cdn.jsdelivr.net/npm/jsoneditor@9.10.0/dist/jsoneditor.min.css" rel="stylesheet" />
   <style>
-    body { margin: 0; padding: 10px; font-family: monospace; background: #f9f9f9; }
-    pre { white-space: pre-wrap; word-wrap: break-word; }
+    html, body { margin: 0; padding: 0; height: 100%; }
+    #jsoneditor { height: 100vh; }
   </style>
 </head>
 <body>
-<pre id="output">Loading JSON...</pre>
+  <div id="jsoneditor"></div>
 
-<script>
-  function getParam(name) {
-    const url = new URL(window.location.href);
-    return url.searchParams.get(name);
-  }
+  <script src="https://cdn.jsdelivr.net/npm/jsoneditor@9.10.0/dist/jsoneditor.min.js"></script>
+  <script>
+    function getParam(name) {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(name);
+    }
 
-  const sheetId = getParam("sheetid");
-  const sheetName = getParam("SheetName") || "Sheet1";
+    const sheetId = getParam("sheetid");
+    const sheetName = getParam("SheetName") || "Sheet1";
 
-  if (sheetId) {
-    const query = encodeURIComponent("Select *");
-    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&tq=${query}`;
+    if (sheetId) {
+      const query = encodeURIComponent("Select *");
+      const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&tq=${query}`;
 
-    fetch(url)
-      .then(res => res.text())
-      .then(data => {
-        const jsonData = JSON.parse(data.substring(47).slice(0, -2));
-        const headers = jsonData.table.cols.map(col => col.label || `Column${col.index}`);
+      fetch(url)
+        .then(res => res.text())
+        .then(data => {
+          const jsonData = JSON.parse(data.substring(47).slice(0, -2));
+          const headers = jsonData.table.cols.map(col => col.label || `Column${col.index}`);
 
-        const rows = jsonData.table.rows.map(row => {
-          let obj = {};
-          row.c.forEach((cell, i) => {
-            let value = null;
-            if (cell) {
-              value = cell.v;
-              if (value === "TRUE") value = true;
-              else if (value === "FALSE") value = false;
-              else if (!isNaN(value) && value !== "") value = Number(value);
-            }
-            obj[headers[i]] = value;
+          const rows = jsonData.table.rows.map(row => {
+            let obj = {};
+            row.c.forEach((cell, i) => {
+              let value = null;
+              if (cell) {
+                value = cell.v;
+                if (value === "TRUE") value = true;
+                else if (value === "FALSE") value = false;
+                else if (!isNaN(value) && value !== "") value = Number(value);
+              }
+              obj[headers[i]] = value;
+            });
+            return obj;
           });
-          return obj;
-        });
 
-        document.getElementById("output").textContent = JSON.stringify(rows, null, 2);
-      })
-      .catch(err => {
-        document.getElementById("output").textContent = "❌ Sheet not found or not public.";
-      });
-  } else {
-    document.getElementById("output").textContent = "❗ sheetid missing in URL.";
-  }
-</script>
+          const container = document.getElementById("jsoneditor");
+          const options = { mode: 'view' };
+          const editor = new JSONEditor(container, options);
+          editor.set(rows);
+        })
+        .catch(err => {
+          document.getElementById("jsoneditor").innerText = "❌ Sheet not found or not public.";
+        });
+    } else {
+      document.getElementById("jsoneditor").innerText = "❗ sheetid missing in URL.";
+    }
+  </script>
 </body>
 </html>
