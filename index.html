@@ -1,12 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Google Sheet to JSON</title>
+  <meta charset="UTF-8">
+  <title>JSON Output</title>
 </head>
 <body>
-  <h3>🧾 JSON Viewer</h3>
-  <pre id="output">Loading...</pre>
-
   <script>
     function getParam(name) {
       const url = new URL(window.location.href);
@@ -14,7 +12,7 @@
     }
 
     const sheetId = getParam("sheetid");
-    const sheetName = getParam("SheetName") || "Sheet1"; // Default Sheet1
+    const sheetName = getParam("SheetName") || "Sheet1"; // Default is Sheet1
 
     if (sheetId) {
       const query = encodeURIComponent("Select *");
@@ -31,13 +29,13 @@
               return obj;
             }, {})
           );
-          document.getElementById("output").textContent = JSON.stringify(rows, null, 2);
+          document.write(JSON.stringify(rows, null, 2));
         })
         .catch(err => {
-          document.getElementById("output").textContent = "❌ Error: Sheet not found or not public.";
+          document.write(JSON.stringify({ error: "❌ Sheet not found or not public." }));
         });
     } else {
-      document.getElementById("output").textContent = "❗ sheetid missing in URL.";
+      document.write(JSON.stringify({ error: "❗ sheetid missing in URL." }));
     }
   </script>
 </body>
