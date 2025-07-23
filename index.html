@@ -3,8 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <title>Google Sheet JSON</title>
+  <style>
+    body { margin: 0; padding: 10px; font-family: monospace; background: #f9f9f9; }
+    pre { white-space: pre-wrap; word-wrap: break-word; }
+  </style>
 </head>
 <body>
+<pre id="output">Loading JSON...</pre>
+
 <script>
   function getParam(name) {
     const url = new URL(window.location.href);
@@ -30,8 +36,6 @@
             let value = null;
             if (cell) {
               value = cell.v;
-
-              // Try to convert to actual data types
               if (value === "TRUE") value = true;
               else if (value === "FALSE") value = false;
               else if (!isNaN(value) && value !== "") value = Number(value);
@@ -41,13 +45,13 @@
           return obj;
         });
 
-        document.write(JSON.stringify(rows, null, 2));
+        document.getElementById("output").textContent = JSON.stringify(rows, null, 2);
       })
       .catch(err => {
-        document.write(JSON.stringify({ error: "❌ Sheet not found or not public." }));
+        document.getElementById("output").textContent = "❌ Sheet not found or not public.";
       });
   } else {
-    document.write(JSON.stringify({ error: "❗ sheetid missing in URL." }));
+    document.getElementById("output").textContent = "❗ sheetid missing in URL.";
   }
 </script>
 </body>
