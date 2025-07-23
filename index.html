@@ -1,43 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Offline To-Do App</title>
-  <style>
-    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
-    input { padding: 10px; width: 250px; }
-    button { padding: 10px; margin-left: 10px; }
-    ul { list-style: none; padding: 0; }
-    li { margin: 10px 0; }
-  </style>
+  <title>Sheet JSON Viewer</title>
 </head>
 <body>
-  <h2>📝 Offline To‑Do App</h2>
-  <input type="text" id="taskInput" placeholder="Enter a task" />
-  <button onclick="addTask()">Add</button>
-  <ul id="taskList"></ul>
-  <script>
-    window.onload = loadTasks;
+  <h2>Google Sheet to JSON</h2>
+  <pre id="output">Loading...</pre>
 
-    function loadTasks() {
-      let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-      let ul = document.getElementById("taskList");
-      ul.innerHTML = "";
-      tasks.forEach(task => {
-        let li = document.createElement("li");
-        li.textContent = task;
-        ul.appendChild(li);
-      });
+  <script>
+    function getParam(name) {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(name);
     }
 
-    function addTask() {
-      let input = document.getElementById("taskInput");
-      let task = input.value.trim();
-      if (!task) return;
-      let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-      tasks.push(task);
-      localStorage.setItem("tasks", JSON.stringify(tasks));
-      input.value = "";
-      loadTasks();
+    const sheetId = getParam("sheetid");
+
+    if (sheetId) {
+      const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
+
+      fetch(url)
+        .then(res => res.text())
+        .then(data => {
+          const json = JSON.parse(data.substr(47).slice(0, -2));
+          const rows = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : null));
+          document.getElementById("output").textContent = JSON.stringify(rows, null, 2);
+        })
+        .catch(err => {
+          document.getElementById("output").textContent = "Error fetching sheet.";
+        });
+    } else {
+      document.getElementById("output").textContent = "No sheetid provided.";
     }
   </script>
 </body>
