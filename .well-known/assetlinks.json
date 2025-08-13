@@ -2,9 +2,9 @@
   "relation": ["delegate_permission/common.handle_all_urls"],
   "target": {
     "namespace": "android_app",
-    "package_name": "com.example.myapp",
+    "package_name": "com.zabbar.tour",
     "sha256_cert_fingerprints": [
-      "12:34:56:78:9A:BC:DE:F0:12:34:56:78:9A:BC:DE:F0:12:34:56:78:9A:BC:DE:F0:12:34:56:78:9A:BC:DE:F0"
+      "18:D6:E9:09:C1:EE:86:71:59:DD:CA:DC:29:97:BA:E8:BE:E1:38:85:26:A8:FD:02:C0:1A:FB:14:6E:16:D4:DB"
     ]
   }
 }]
